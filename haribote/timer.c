@@ -165,12 +165,14 @@ void inthandler20(int *esp)
 {
 	struct TIMER *timer;
 	char ts = 0; // Task switch flag
+	unsigned int previous_timeout; // Store the previous timeout for periodic timers
 	io_out8(PIC0_OCW2, 0x60);	/* 把IRQ-00信号接收完了的信息通知给PIC */
 	timerctl.count++;
 
 	// Process all expired timers
 	while (timerctl.heap_size > 0 && timerctl.heap[0]->timeout <= timerctl.count) {
 		timer = timerctl.heap[0]; // Get the timer with the smallest timeout
+		previous_timeout = timer->timeout; // Store the scheduled timeout time
 		timer->flags = TIMER_FLAGS_ALLOC; // Mark as allocated (not actively timing)
 
 		// Send data if not the task timer
@@ -185,7 +187,9 @@ void inthandler20(int *esp)
 
 		// If it's a periodic timer, re-insert it with the next timeout
 		if (timer->interval > 0) {
-			timer->timeout = timerctl.count + timer->interval;
+			// Calculate next timeout based on the *previous* scheduled timeout
+			// to maintain accuracy and avoid drift.
+			timer->timeout = previous_timeout + timer->interval;
 			timer->flags = TIMER_FLAGS_USING; // Mark as active again
             heap_insert(timer); // Re-insert into heap
 		} else {
