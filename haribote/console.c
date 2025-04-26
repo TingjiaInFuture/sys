@@ -367,16 +367,12 @@ void cmd_timer(struct CONSOLE *cons, char *cmdline)
 
 	if (duration <= 0) {
 		cons_putstr0(cons, "Invalid duration.\n");
-		cons_newline(cons);
-		cons_putchar(cons, '>', 1);
 		return;
 	}
 
 	struct TIMER *timer = timer_alloc();
 	if (timer == 0) {
 		cons_putstr0(cons, "Could not allocate timer.\n");
-		cons_newline(cons);
-		cons_putchar(cons, '>', 1);
 		return;
 	}
 
@@ -386,11 +382,9 @@ void cmd_timer(struct CONSOLE *cons, char *cmdline)
 
 	sprintf(s, "Timer started for %d seconds.\n", duration);
 	cons_putstr0(cons, s);
-	cons_newline(cons);
-	cons_putchar(cons, '>', 1); // Show prompt again immediately
+	cons_newline(cons); // Add newline for better formatting after message
 	return;
 }
-
 
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 {
