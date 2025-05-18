@@ -1,54 +1,54 @@
 ; haribote-ipl
 ; TAB=4
 
-CYLS	EQU		9				; ‚Ç‚±‚Ü‚Å“Ç‚Ýž‚Þ‚©
+CYLS	EQU		55				; Ç‚Ü‚Å“Ç‚ÝÞ‚
 
-		ORG		0x7c00			; ‚±‚ÌƒvƒƒOƒ‰ƒ€‚ª‚Ç‚±‚É“Ç‚Ýž‚Ü‚ê‚é‚Ì‚©
+		ORG		0x7c00			; ï¿½ï¿½ï¿½Ìƒvï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½É“Ç‚Ýï¿½ï¿½Ü‚ï¿½ï¿½Ì‚ï¿½
 
-; ˆÈ‰º‚Í•W€“I‚ÈFAT12ƒtƒH[ƒ}ƒbƒgƒtƒƒbƒs[ƒfƒBƒXƒN‚Ì‚½‚ß‚Ì‹Lq
+; ï¿½È‰ï¿½ï¿½Í•Wï¿½ï¿½ï¿½Iï¿½ï¿½FAT12ï¿½tï¿½Hï¿½[ï¿½}ï¿½bï¿½gï¿½tï¿½ï¿½ï¿½bï¿½sï¿½[ï¿½fï¿½Bï¿½Xï¿½Nï¿½Ì‚ï¿½ï¿½ß‚Ì‹Lï¿½q
 
 		JMP		entry
 		DB		0x90
-		DB		"HARIBOTE"		; ƒu[ƒgƒZƒNƒ^‚Ì–¼‘O‚ðŽ©—R‚É‘‚¢‚Ä‚æ‚¢i8ƒoƒCƒgj
-		DW		512				; 1ƒZƒNƒ^‚Ì‘å‚«‚³i512‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DB		1				; ƒNƒ‰ƒXƒ^‚Ì‘å‚«‚³i1ƒZƒNƒ^‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DW		1				; FAT‚ª‚Ç‚±‚©‚çŽn‚Ü‚é‚©i•’Ê‚Í1ƒZƒNƒ^–Ú‚©‚ç‚É‚·‚éj
-		DB		2				; FAT‚ÌŒÂ”i2‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DW		224				; ƒ‹[ƒgƒfƒBƒŒƒNƒgƒŠ—Ìˆæ‚Ì‘å‚«‚³i•’Ê‚Í224ƒGƒ“ƒgƒŠ‚É‚·‚éj
-		DW		2880			; ‚±‚Ìƒhƒ‰ƒCƒu‚Ì‘å‚«‚³i2880ƒZƒNƒ^‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DB		0xf0			; ƒƒfƒBƒA‚Ìƒ^ƒCƒvi0xf0‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DW		9				; FAT—Ìˆæ‚Ì’·‚³i9ƒZƒNƒ^‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DW		18				; 1ƒgƒ‰ƒbƒN‚É‚¢‚­‚Â‚ÌƒZƒNƒ^‚ª‚ ‚é‚©i18‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DW		2				; ƒwƒbƒh‚Ì”i2‚É‚µ‚È‚¯‚ê‚Î‚¢‚¯‚È‚¢j
-		DD		0				; ƒp[ƒeƒBƒVƒ‡ƒ“‚ðŽg‚Á‚Ä‚È‚¢‚Ì‚Å‚±‚±‚Í•K‚¸0
-		DD		2880			; ‚±‚Ìƒhƒ‰ƒCƒu‘å‚«‚³‚ð‚à‚¤ˆê“x‘‚­
-		DB		0,0,0x29		; ‚æ‚­‚í‚©‚ç‚È‚¢‚¯‚Ç‚±‚Ì’l‚É‚µ‚Ä‚¨‚­‚Æ‚¢‚¢‚ç‚µ‚¢
-		DD		0xffffffff		; ‚½‚Ô‚ñƒ{ƒŠƒ…[ƒ€ƒVƒŠƒAƒ‹”Ô†
-		DB		"HARIBOTEOS "	; ƒfƒBƒXƒN‚Ì–¼‘Oi11ƒoƒCƒgj
-		DB		"FAT12   "		; ƒtƒH[ƒ}ƒbƒg‚Ì–¼‘Oi8ƒoƒCƒgj
-		RESB	18				; ‚Æ‚è‚ ‚¦‚¸18ƒoƒCƒg‚ ‚¯‚Ä‚¨‚­
+		DB		"HARIBOTE"		; ï¿½uï¿½[ï¿½gï¿½Zï¿½Nï¿½^ï¿½Ì–ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½Rï¿½Éï¿½ï¿½ï¿½ï¿½Ä‚æ‚¢ï¿½i8ï¿½oï¿½Cï¿½gï¿½j
+		DW		512				; 1ï¿½Zï¿½Nï¿½^ï¿½Ì‘å‚«ï¿½ï¿½ï¿½i512ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DB		1				; ï¿½Nï¿½ï¿½ï¿½Xï¿½^ï¿½Ì‘å‚«ï¿½ï¿½ï¿½i1ï¿½Zï¿½Nï¿½^ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DW		1				; FATï¿½ï¿½ï¿½Ç‚ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½Ü‚é‚©ï¿½iï¿½ï¿½ï¿½Ê‚ï¿½1ï¿½Zï¿½Nï¿½^ï¿½Ú‚ï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½j
+		DB		2				; FATï¿½ÌŒÂï¿½ï¿½i2ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DW		224				; ï¿½ï¿½ï¿½[ï¿½gï¿½fï¿½Bï¿½ï¿½ï¿½Nï¿½gï¿½ï¿½ï¿½Ìˆï¿½Ì‘å‚«ï¿½ï¿½ï¿½iï¿½ï¿½ï¿½Ê‚ï¿½224ï¿½Gï¿½ï¿½ï¿½gï¿½ï¿½ï¿½É‚ï¿½ï¿½ï¿½j
+		DW		2880			; ï¿½ï¿½ï¿½Ìƒhï¿½ï¿½ï¿½Cï¿½uï¿½Ì‘å‚«ï¿½ï¿½ï¿½i2880ï¿½Zï¿½Nï¿½^ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DB		0xf0			; ï¿½ï¿½ï¿½fï¿½Bï¿½Aï¿½Ìƒ^ï¿½Cï¿½vï¿½i0xf0ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DW		9				; FATï¿½Ìˆï¿½Ì’ï¿½ï¿½ï¿½ï¿½i9ï¿½Zï¿½Nï¿½^ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DW		18				; 1ï¿½gï¿½ï¿½ï¿½bï¿½Nï¿½É‚ï¿½ï¿½ï¿½ï¿½Â‚ÌƒZï¿½Nï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½é‚©ï¿½i18ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DW		2				; ï¿½wï¿½bï¿½hï¿½Ìï¿½ï¿½i2ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ï¿½Î‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½j
+		DD		0				; ï¿½pï¿½[ï¿½eï¿½Bï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ä‚È‚ï¿½ï¿½Ì‚Å‚ï¿½ï¿½ï¿½ï¿½Í•Kï¿½ï¿½0
+		DD		2880			; ï¿½ï¿½ï¿½Ìƒhï¿½ï¿½ï¿½Cï¿½uï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½ï¿½
+		DB		0,0,0x29		; ï¿½æ‚­ï¿½í‚©ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½Ç‚ï¿½ï¿½Ì’lï¿½É‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ç‚µï¿½ï¿½
+		DD		0xffffffff		; ï¿½ï¿½ï¿½Ô‚ï¿½{ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ôï¿½
+		DB		"HARIBOTEOS "	; ï¿½fï¿½Bï¿½Xï¿½Nï¿½Ì–ï¿½ï¿½Oï¿½i11ï¿½oï¿½Cï¿½gï¿½j
+		DB		"FAT12   "		; ï¿½tï¿½Hï¿½[ï¿½}ï¿½bï¿½gï¿½Ì–ï¿½ï¿½Oï¿½i8ï¿½oï¿½Cï¿½gï¿½j
+		RESB	18				; ï¿½Æ‚è‚ ï¿½ï¿½ï¿½ï¿½18ï¿½oï¿½Cï¿½gï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 
-; ƒvƒƒOƒ‰ƒ€–{‘Ì
+; ï¿½vï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½{ï¿½ï¿½
 
 entry:
-		MOV		AX,0			; ƒŒƒWƒXƒ^‰Šú‰»
+		MOV		AX,0			; ï¿½ï¿½ï¿½Wï¿½Xï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		MOV		SS,AX
 		MOV		SP,0x7c00
 		MOV		DS,AX
 
-; ƒfƒBƒXƒN‚ð“Ç‚Þ
+; ï¿½fï¿½Bï¿½Xï¿½Nï¿½ï¿½Ç‚ï¿½
 
 		MOV		AX,0x0820
 		MOV		ES,AX
-		MOV		CH,0			; ƒVƒŠƒ“ƒ_0
-		MOV		DH,0			; ƒwƒbƒh0
-		MOV		CL,2			; ƒZƒNƒ^2
-		MOV		BX,18*2*CYLS-1	; “Ç‚Ýž‚Ý‚½‚¢‡ŒvƒZƒNƒ^”
-		CALL	readfast		; ‚‘¬“Ç‚Ýž‚Ý
+		MOV		CH,0			; ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½_0
+		MOV		DH,0			; ï¿½wï¿½bï¿½h0
+		MOV		CL,2			; ï¿½Zï¿½Nï¿½^2
+		MOV		BX,18*2*CYLS-1	; ï¿½Ç‚Ýï¿½ï¿½Ý‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Zï¿½Nï¿½^ï¿½ï¿½
+		CALL	readfast		; ï¿½ï¿½ï¿½ï¿½ï¿½Ç‚Ýï¿½ï¿½ï¿½
 
-; “Ç‚ÝI‚í‚Á‚½‚Ì‚Åharibote.sys‚ðŽÀs‚¾I
+; ï¿½Ç‚ÝIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚ï¿½haribote.sysï¿½ï¿½ï¿½ï¿½ï¿½sï¿½ï¿½ï¿½I
 
-		MOV		BYTE [0x0ff0],CYLS	; IPL‚ª‚Ç‚±‚Ü‚Å“Ç‚ñ‚¾‚Ì‚©‚ðƒƒ‚
+		MOV		BYTE [0x0ff0],CYLS	; IPLï¿½ï¿½ï¿½Ç‚ï¿½ï¿½Ü‚Å“Ç‚ñ‚¾‚Ì‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		JMP		0xc200
 
 error:
@@ -57,32 +57,32 @@ error:
 		MOV		SI,msg
 putloop:
 		MOV		AL,[SI]
-		ADD		SI,1			; SI‚É1‚ð‘«‚·
+		ADD		SI,1			; SIï¿½ï¿½1ï¿½ð‘«‚ï¿½
 		CMP		AL,0
 		JE		fin
-		MOV		AH,0x0e			; ˆê•¶Žš•\Ž¦ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“
-		MOV		BX,15			; ƒJƒ‰[ƒR[ƒh
-		INT		0x10			; ƒrƒfƒIBIOSŒÄ‚Ño‚µ
+		MOV		AH,0x0e			; ï¿½ê•¶ï¿½ï¿½ï¿½\ï¿½ï¿½ï¿½tï¿½@ï¿½ï¿½ï¿½Nï¿½Vï¿½ï¿½ï¿½ï¿½
+		MOV		BX,15			; ï¿½Jï¿½ï¿½ï¿½[ï¿½Rï¿½[ï¿½h
+		INT		0x10			; ï¿½rï¿½fï¿½IBIOSï¿½Ä‚Ñoï¿½ï¿½
 		JMP		putloop
 fin:
-		HLT						; ‰½‚©‚ ‚é‚Ü‚ÅCPU‚ð’âŽ~‚³‚¹‚é
-		JMP		fin				; –³ŒÀƒ‹[ƒv
+		HLT						; ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½CPUï¿½ï¿½ï¿½~ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		JMP		fin				; ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½v
 msg:
-		DB		0x0a, 0x0a		; ‰üs‚ð2‚Â
+		DB		0x0a, 0x0a		; ï¿½ï¿½ï¿½sï¿½ï¿½2ï¿½ï¿½
 		DB		"load error"
-		DB		0x0a			; ‰üs
+		DB		0x0a			; ï¿½ï¿½ï¿½s
 		DB		0
 
-readfast:	; AL‚ðŽg‚Á‚Ä‚Å‚«‚é‚¾‚¯‚Ü‚Æ‚ß‚Ä“Ç‚Ýo‚·
-;	ES:“Ç‚Ýž‚Ý”Ô’n, CH:ƒVƒŠƒ“ƒ_, DH:ƒwƒbƒh, CL:ƒZƒNƒ^, BX:“Ç‚Ýž‚ÝƒZƒNƒ^”
+readfast:	; ALï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Ä‚Å‚ï¿½ï¿½é‚¾ï¿½ï¿½ï¿½Ü‚Æ‚ß‚Ä“Ç‚Ýoï¿½ï¿½
+;	ES:ï¿½Ç‚Ýï¿½ï¿½Ý”Ô’n, CH:ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½_, DH:ï¿½wï¿½bï¿½h, CL:ï¿½Zï¿½Nï¿½^, BX:ï¿½Ç‚Ýï¿½ï¿½ÝƒZï¿½Nï¿½^ï¿½ï¿½
 
-		MOV		AX,ES			; < ES‚©‚çAL‚ÌÅ‘å’l‚ðŒvŽZ >
-		SHL		AX,3			; AX‚ð32‚ÅŠ„‚Á‚ÄA‚»‚ÌŒ‹‰Ê‚ðAH‚É“ü‚ê‚½‚±‚Æ‚É‚È‚é iSHL‚Í¶ƒVƒtƒg–½—ßj
-		AND		AH,0x7f			; AH‚ÍAH‚ð128‚ÅŠ„‚Á‚½—]‚èi512*128=64Kj
-		MOV		AL,128			; AL = 128 - AH; ˆê”Ô‹ß‚¢64KB‹«ŠE‚Ü‚ÅÅ‘å‰½ƒZƒNƒ^“ü‚é‚©
+		MOV		AX,ES			; < ESï¿½ï¿½ï¿½ï¿½ALï¿½ÌÅ‘ï¿½lï¿½ï¿½ï¿½vï¿½Z >
+		SHL		AX,3			; AXï¿½ï¿½32ï¿½ÅŠï¿½ï¿½ï¿½ï¿½ÄAï¿½ï¿½ï¿½ÌŒï¿½ï¿½Ê‚ï¿½AHï¿½É“ï¿½ï¿½ê‚½ï¿½ï¿½ï¿½Æ‚É‚È‚ï¿½ ï¿½iSHLï¿½Íï¿½ï¿½Vï¿½tï¿½gï¿½ï¿½ï¿½ßj
+		AND		AH,0x7f			; AHï¿½ï¿½AHï¿½ï¿½128ï¿½ÅŠï¿½ï¿½ï¿½ï¿½ï¿½ï¿½]ï¿½ï¿½i512*128=64Kï¿½j
+		MOV		AL,128			; AL = 128 - AH; ï¿½ï¿½Ô‹ß‚ï¿½64KBï¿½ï¿½ï¿½Eï¿½Ü‚ÅÅ‘å‰½ï¿½Zï¿½Nï¿½^ï¿½ï¿½ï¿½é‚©
 		SUB		AL,AH
 
-		MOV		AH,BL			; < BX‚©‚çAL‚ÌÅ‘å’l‚ðAH‚ÉŒvŽZ >
+		MOV		AH,BL			; < BXï¿½ï¿½ï¿½ï¿½ALï¿½ÌÅ‘ï¿½lï¿½ï¿½AHï¿½ÉŒvï¿½Z >
 		CMP		BH,0			; if (BH != 0) { AH = 18; }
 		JE		.skip1
 		MOV		AH,18
@@ -92,7 +92,7 @@ readfast:	; AL‚ðŽg‚Á‚Ä‚Å‚«‚é‚¾‚¯‚Ü‚Æ‚ß‚Ä“Ç‚Ýo‚·
 		MOV		AL,AH
 .skip2:
 
-		MOV		AH,19			; < CL‚©‚çAL‚ÌÅ‘å’l‚ðAH‚ÉŒvŽZ >
+		MOV		AH,19			; < CLï¿½ï¿½ï¿½ï¿½ALï¿½ÌÅ‘ï¿½lï¿½ï¿½AHï¿½ÉŒvï¿½Z >
 		SUB		AH,CL			; AH = 19 - CL;
 		CMP		AL,AH			; if (AL > AH) { AL = AH; }
 		JBE		.skip3
@@ -100,23 +100,23 @@ readfast:	; AL‚ðŽg‚Á‚Ä‚Å‚«‚é‚¾‚¯‚Ü‚Æ‚ß‚Ä“Ç‚Ýo‚·
 .skip3:
 
 		PUSH	BX
-		MOV		SI,0			; Ž¸”s‰ñ”‚ð”‚¦‚éƒŒƒWƒXƒ^
+		MOV		SI,0			; ï¿½ï¿½ï¿½sï¿½ñ”‚ð”‚ï¿½ï¿½éƒŒï¿½Wï¿½Xï¿½^
 retry:
-		MOV		AH,0x02			; AH=0x02 : ƒfƒBƒXƒN“Ç‚Ýž‚Ý
+		MOV		AH,0x02			; AH=0x02 : ï¿½fï¿½Bï¿½Xï¿½Nï¿½Ç‚Ýï¿½ï¿½ï¿½
 		MOV		BX,0
-		MOV		DL,0x00			; Aƒhƒ‰ƒCƒu
+		MOV		DL,0x00			; Aï¿½hï¿½ï¿½ï¿½Cï¿½u
 		PUSH	ES
 		PUSH	DX
 		PUSH	CX
 		PUSH	AX
-		INT		0x13			; ƒfƒBƒXƒNBIOSŒÄ‚Ño‚µ
-		JNC		next			; ƒGƒ‰[‚ª‚¨‚«‚È‚¯‚ê‚Înext‚Ö
-		ADD		SI,1			; SI‚É1‚ð‘«‚·
-		CMP		SI,5			; SI‚Æ5‚ð”äŠr
-		JAE		error			; SI >= 5 ‚¾‚Á‚½‚çerror‚Ö
+		INT		0x13			; ï¿½fï¿½Bï¿½Xï¿½NBIOSï¿½Ä‚Ñoï¿½ï¿½
+		JNC		next			; ï¿½Gï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ï¿½ï¿½nextï¿½ï¿½
+		ADD		SI,1			; SIï¿½ï¿½1ï¿½ð‘«‚ï¿½
+		CMP		SI,5			; SIï¿½ï¿½5ï¿½ï¿½ï¿½r
+		JAE		error			; SI >= 5 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½errorï¿½ï¿½
 		MOV		AH,0x00
-		MOV		DL,0x00			; Aƒhƒ‰ƒCƒu
-		INT		0x13			; ƒhƒ‰ƒCƒu‚ÌƒŠƒZƒbƒg
+		MOV		DL,0x00			; Aï¿½hï¿½ï¿½ï¿½Cï¿½u
+		INT		0x13			; ï¿½hï¿½ï¿½ï¿½Cï¿½uï¿½Ìƒï¿½ï¿½Zï¿½bï¿½g
 		POP		AX
 		POP		CX
 		POP		DX
@@ -126,28 +126,28 @@ next:
 		POP		AX
 		POP		CX
 		POP		DX
-		POP		BX				; ES‚Ì“à—e‚ðBX‚ÅŽó‚¯Žæ‚é
-		SHR		BX,5			; BX‚ð16ƒoƒCƒg’PˆÊ‚©‚ç512ƒoƒCƒg’PˆÊ‚Ö
+		POP		BX				; ESï¿½Ì“ï¿½ï¿½eï¿½ï¿½BXï¿½ÅŽó‚¯Žï¿½ï¿½
+		SHR		BX,5			; BXï¿½ï¿½16ï¿½oï¿½Cï¿½gï¿½Pï¿½Ê‚ï¿½ï¿½ï¿½512ï¿½oï¿½Cï¿½gï¿½Pï¿½Ê‚ï¿½
 		MOV		AH,0
 		ADD		BX,AX			; BX += AL;
-		SHL		BX,5			; BX‚ð512ƒoƒCƒg’PˆÊ‚©‚ç16ƒoƒCƒg’PˆÊ‚Ö
-		MOV		ES,BX			; ‚±‚ê‚Å ES += AL * 0x20; ‚É‚È‚é
+		SHL		BX,5			; BXï¿½ï¿½512ï¿½oï¿½Cï¿½gï¿½Pï¿½Ê‚ï¿½ï¿½ï¿½16ï¿½oï¿½Cï¿½gï¿½Pï¿½Ê‚ï¿½
+		MOV		ES,BX			; ï¿½ï¿½ï¿½ï¿½ï¿½ ES += AL * 0x20; ï¿½É‚È‚ï¿½
 		POP		BX
 		SUB		BX,AX
 		JZ		.ret
-		ADD		CL,AL			; CL‚ÉAL‚ð‘«‚·
-		CMP		CL,18			; CL‚Æ18‚ð”äŠr
-		JBE		readfast		; CL <= 18 ‚¾‚Á‚½‚çreadfast‚Ö
+		ADD		CL,AL			; CLï¿½ï¿½ALï¿½ð‘«‚ï¿½
+		CMP		CL,18			; CLï¿½ï¿½18ï¿½ï¿½ï¿½r
+		JBE		readfast		; CL <= 18 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½readfastï¿½ï¿½
 		MOV		CL,1
 		ADD		DH,1
 		CMP		DH,2
-		JB		readfast		; DH < 2 ‚¾‚Á‚½‚çreadfast‚Ö
+		JB		readfast		; DH < 2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½readfastï¿½ï¿½
 		MOV		DH,0
 		ADD		CH,1
 		JMP		readfast
 .ret:
 		RET
 
-		RESB	0x7dfe-$		; 0x7dfe‚Ü‚Å‚ð0x00‚Å–„‚ß‚é–½—ß
+		RESB	0x7dfe-$		; 0x7dfeï¿½Ü‚Å‚ï¿½0x00ï¿½Å–ï¿½ï¿½ß‚é–½ï¿½ï¿½
 
 		DB		0x55, 0xaa

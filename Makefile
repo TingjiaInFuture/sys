@@ -7,12 +7,12 @@ IMGTOL   = $(TOOLPATH)imgtol.com
 COPY     = copy
 DEL      = del
 
-# ÉfÉtÉHÉãÉgìÆçÏ
+# ÔøΩfÔøΩtÔøΩHÔøΩÔøΩÔøΩgÔøΩÔøΩÔøΩÔøΩ
 
 default :
 	$(MAKE) haribote.img
 
-# ÉtÉ@ÉCÉãê∂ê¨ãKë•
+# ÔøΩtÔøΩ@ÔøΩCÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩKÔøΩÔøΩ
 
 haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		a/a.hrb hello3/hello3.hrb hello4/hello4.hrb hello5/hello5.hrb \
@@ -23,7 +23,8 @@ haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		sosu/sosu.hrb sosu2/sosu2.hrb sosu3/sosu3.hrb \
 		type/type.hrb iroha/iroha.hrb chklang/chklang.hrb \
 		notrec/notrec.hrb bball/bball.hrb invader/invader.hrb \
-		calc/calc.hrb tview/tview.hrb mmlplay/mmlplay.hrb gview/gview.hrb
+		calc/calc.hrb tview/tview.hrb mmlplay/mmlplay.hrb gview/gview.hrb \
+		han/han.hrb 
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:haribote/ipl09.bin len:512 from:0 to:0 \
 		copy from:haribote/haribote.sys to:@: \
@@ -31,7 +32,6 @@ haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		copy from:make.bat to:@: \
 		copy from:a/a.hrb to:@: \
 		copy from:hello3/hello3.hrb to:@: \
-		copy from:hello4/hello4.hrb to:@: \
 		copy from:hello5/hello5.hrb to:@: \
 		copy from:winhelo/winhelo.hrb to:@: \
 		copy from:winhelo2/winhelo2.hrb to:@: \
@@ -66,9 +66,12 @@ haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		copy from:pictdata/fujisan.jpg to:@: \
 		copy from:pictdata/night.bmp to:@: \
 		copy from:nihongo/nihongo.fnt to:@: \
+		copy from:han/han.hrb to:@: \
+		copy from:HZK16 to:@: \
+		copy from:hello4/hello4.hrb to:@: \
 		imgout:haribote.img
 
-# ÉRÉ}ÉìÉh
+# ÔøΩRÔøΩ}ÔøΩÔøΩÔøΩh
 
 run :
 	$(MAKE) haribote.img
@@ -84,7 +87,6 @@ full :
 	$(MAKE) -C apilib
 	$(MAKE) -C a
 	$(MAKE) -C hello3
-	$(MAKE) -C hello4
 	$(MAKE) -C hello5
 	$(MAKE) -C winhelo
 	$(MAKE) -C winhelo2
@@ -111,6 +113,8 @@ full :
 	$(MAKE) -C tview
 	$(MAKE) -C mmlplay
 	$(MAKE) -C gview
+	$(MAKE) -C han
+	$(MAKE) -C hello4
 	$(MAKE) haribote.img
 
 run_full :
@@ -127,7 +131,7 @@ run_os :
 	$(MAKE) run
 
 clean :
-# âΩÇ‡ÇµÇ»Ç¢
+# ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ»ÇÔøΩ
 
 src_only :
 	$(MAKE) clean
@@ -138,7 +142,6 @@ clean_full :
 	$(MAKE) -C apilib		clean
 	$(MAKE) -C a			clean
 	$(MAKE) -C hello3		clean
-	$(MAKE) -C hello4		clean
 	$(MAKE) -C hello5		clean
 	$(MAKE) -C winhelo		clean
 	$(MAKE) -C winhelo2		clean
@@ -165,13 +168,14 @@ clean_full :
 	$(MAKE) -C tview		clean
 	$(MAKE) -C mmlplay		clean
 	$(MAKE) -C gview		clean
+	$(MAKE) -C han			clean
+	$(MAKE) -C hello4		clean
 
 src_only_full :
 	$(MAKE) -C haribote		src_only
 	$(MAKE) -C apilib		src_only
 	$(MAKE) -C a			src_only
 	$(MAKE) -C hello3		src_only
-	$(MAKE) -C hello4		src_only
 	$(MAKE) -C hello5		src_only
 	$(MAKE) -C winhelo		src_only
 	$(MAKE) -C winhelo2		src_only
@@ -198,6 +202,8 @@ src_only_full :
 	$(MAKE) -C tview		src_only
 	$(MAKE) -C mmlplay		src_only
 	$(MAKE) -C gview		src_only
+	$(MAKE) -C han			src_only
+	$(MAKE) -C hello4		src_only
 	-$(DEL) haribote.img
 
 refresh :
