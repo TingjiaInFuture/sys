@@ -84,6 +84,23 @@ void HariMain(void)
 	buf_back  = (unsigned char *) memman_alloc_4k(memman, binfo->scrnx * binfo->scrny);
 	sheet_setbuf(sht_back, buf_back, binfo->scrnx, binfo->scrny, -1); /* �����F�Ȃ� */
 	init_screen8(buf_back, binfo->scrnx, binfo->scrny);
+	boxfill8(buf_back, binfo->scrnx, COL8_C6C6C6, 0,         binfo->scrny - 28, binfo->scrnx - 1, binfo->scrny - 28);
+	boxfill8(buf_back, binfo->scrnx, COL8_FFFFFF, 0,         binfo->scrny - 27, binfo->scrnx - 1, binfo->scrny - 27);
+	boxfill8(buf_back, binfo->scrnx, COL8_C6C6C6, 0,         binfo->scrny - 26, binfo->scrnx - 1, binfo->scrny -  1);
+
+	boxfill8(buf_back, binfo->scrnx, COL8_FFFFFF, 3,         binfo->scrny - 24, 59,        binfo->scrny - 24);
+	boxfill8(buf_back, binfo->scrnx, COL8_FFFFFF, 2,         binfo->scrny - 24,  2,        binfo->scrny -  4);
+	boxfill8(buf_back, binfo->scrnx, COL8_848484, 3,         binfo->scrny -  4, 59,        binfo->scrny -  4);
+	boxfill8(buf_back, binfo->scrnx, COL8_848484, 59,        binfo->scrny - 23, 59,        binfo->scrny -  5);
+	boxfill8(buf_back, binfo->scrnx, COL8_000000, 2,         binfo->scrny -  3, 59,        binfo->scrny -  3);
+	boxfill8(buf_back, binfo->scrnx, COL8_000000, 60,        binfo->scrny - 24, 60,        binfo->scrny -  3);
+
+	/* 在按钮区域绘制 "START" 文本 */
+	/* "START" 长度为 5, 宽度 5*8=40. 按钮区域宽度约 58 (2 to 59). x = (58-40)/2 + 2 = 9 + 2 = 11 */
+	/* 字体高度 16. 按钮区域高度约 20 (scrny-24 to scrny-4). y = (20-16)/2 + (scrny-24) = 2 + scrny - 24 = scrny - 22 */
+	putfonts8_asc_sht(sht_back, 11, binfo->scrny - 22, COL8_000000, COL8_C6C6C6, "START", 5);
+
+	boxfill8(buf_back, binfo->scrnx, COL8_848484, binfo->scrnx - 47, binfo->scrny - 24, binfo->scrnx -  4, binfo->scrny - 24);
 
 	/* sht_cons */
 	key_win = open_console(shtctl, memtotal);

@@ -1,4 +1,4 @@
-/* ƒEƒBƒ“ƒhƒEŠÖŒW */
+/* ï¿½Eï¿½Bï¿½ï¿½ï¿½hï¿½Eï¿½ÖŒW */
 
 #include "bootpack.h"
 
@@ -68,13 +68,8 @@ void putfonts8_asc_sht(struct SHEET *sht, int x, int y, int c, int b, char *s, i
 {
 	struct TASK *task = task_now();
 	boxfill8(sht->buf, sht->bxsize, b, x, y, x + l * 8 - 1, y + 15);
-	if (task->langmode != 0 && task->langbyte1 != 0) {
-		putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
-		sheet_refresh(sht, x - 8, y, x + l * 8, y + 16);
-	} else {
-		putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
-		sheet_refresh(sht, x, y, x + l * 8, y + 16);
-	}
+	putfonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
+	sheet_refresh(sht, x, y, x + l * 8, y + 16);
 	return;
 }
 
