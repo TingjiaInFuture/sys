@@ -1,8 +1,18 @@
 #include "apilib.h"
 
-// Window layout constants (moved earlier for visibility and use in draw_char_16x16_to_buffer)
-#define WIN_XSIZ 240   // Reduced from 320 to 240 to decrease memory allocation
-#define WIN_YSIZ 80    // Reduced from 80 to 60 to decrease memory allocation
+// Window layout constants (moved earlier for visibility and use in draw_char_16x16)
+#define COMPOSED_CHAR_DISPLAY_WIDTH 16
+#define COMPOSED_CHAR_GAP 1
+#define COMPOSED_CHAR_TOTAL_WIDTH (COMPOSED_CHAR_DISPLAY_WIDTH + COMPOSED_CHAR_GAP)
+
+#define X_COMPOSED_START 8
+// Calculate WIN_XSIZ to fit the maximum composed text length, plus some margin
+// This makes the window width adaptive at compile-time to MAX_COMPOSED_TEXT_LEN.
+// Note: This will increase memory usage for win_buf significantly if MAX_COMPOSED_TEXT_LEN is large.
+// Original WIN_XSIZ was 240. For MAX_COMPOSED_TEXT_LEN = 50, this becomes 8 + 50*17 + 8 = 866.
+// For MAX_COMPOSED_TEXT_LEN = 20, this becomes 8 + 20*17 + 8 = 356.
+#define WIN_XSIZ (X_COMPOSED_START + MAX_COMPOSED_TEXT_LEN * COMPOSED_CHAR_TOTAL_WIDTH + X_COMPOSED_START) //左右留边距
+#define WIN_YSIZ 80    // Reduced Y size to potentially fix allocation issues and match earlier comments -> Increased Y size
 #define CHAR_COLOR 0   // Black
 #define BG_COLOR 7     // White
 
@@ -17,7 +27,7 @@
 #define Y_CANDIDATES (Y_PINYIN + 12 + 3)
 #define X_CANDIDATES 8
 #define WIDTH_CANDIDATES_AREA (WIN_XSIZ - 16)
-#define HEIGHT_CANDIDATES_AREA 16 // Adjusted for WIN_YSIZ 60. (Y_CANDIDATES is around 42, 42 + 16 = 58 <= 60)
+#define HEIGHT_CANDIDATES_AREA (WIN_YSIZ - Y_CANDIDATES - 8) // Dynamically calculate based on Y_CANDIDATES and a bottom margin
 
 // Simple string length function
 int my_strlen(const char *s) {
@@ -113,7 +123,7 @@ void draw_char_16x16_to_buffer(char *win_buf, int win_width, int x_start, int y_
 
 #define MAX_PINYIN_LEN 10
 #define MAX_CANDIDATES 5
-#define MAX_COMPOSED_TEXT_LEN 50
+#define MAX_COMPOSED_TEXT_LEN 20 // Reduced from 50 to decrease window width and memory usage
 
 typedef struct {
     char pinyin[MAX_PINYIN_LEN];
@@ -167,8 +177,15 @@ void redraw_dynamic_content(int win, char *win_buf, int win_width, unsigned char
     api_refreshwin(win, X_PINYIN, Y_PINYIN, X_PINYIN + WIDTH_PINYIN_AREA, Y_PINYIN + HEIGHT_PINYIN_AREA);
 
     // Clear and draw Candidates
-    api_boxfilwin(win, X_CANDIDATES, Y_CANDIDATES, X_CANDIDATES + WIDTH_CANDIDATES_AREA -1, Y_CANDIDATES + HEIGHT_CANDIDATES_AREA -1, BG_COLOR);
-    int y_curr_cand = Y_CANDIDATES;    for (i = 0; i < num_candidates; i++) {
+    // Calculate the maximum possible y extent for candidates to clear the entire potential area
+    int max_cand_y_extent = Y_CANDIDATES + (MAX_CANDIDATES * 16); // 16 is the height of a candidate char
+    if (max_cand_y_extent > WIN_YSIZ - 8) { // Ensure it doesn't exceed window bounds (with a small margin)
+        max_cand_y_extent = WIN_YSIZ - 8;
+    }
+    api_boxfilwin(win, X_CANDIDATES, Y_CANDIDATES, X_CANDIDATES + WIDTH_CANDIDATES_AREA -1, max_cand_y_extent -1 , BG_COLOR);
+
+    int y_curr_cand = Y_CANDIDATES;
+    for (i = 0; i < num_candidates; i++) {
         char num_label[4] = {' ', '.', ' ', '\0'}; // 修正：使用正确的空终止符 '\0'
         num_label[0] = (i + 1) + '0';
         api_putstrwin(win, X_CANDIDATES, y_curr_cand, CHAR_COLOR, my_strlen(num_label), num_label);
@@ -180,9 +197,18 @@ void redraw_dynamic_content(int win, char *win_buf, int win_width, unsigned char
                 draw_char_16x16_to_buffer(win_buf, win_width, X_CANDIDATES + 50, y_curr_cand, font_buf, CHAR_COLOR);
             }
         }
-        y_curr_cand += 16; // Reduced spacing for smaller window
+        y_curr_cand += 16; // Spacing for candidate characters
     }
-    api_refreshwin(win, X_CANDIDATES, Y_CANDIDATES, X_CANDIDATES + WIDTH_CANDIDATES_AREA, Y_CANDIDATES + HEIGHT_CANDIDATES_AREA);
+    // Refresh the candidates area, ensuring the refresh height doesn't exceed the window
+    int refresh_height_cand = Y_CANDIDATES + (num_candidates * 16);
+    if (refresh_height_cand > WIN_YSIZ -8) {
+        refresh_height_cand = WIN_YSIZ - 8;
+    }
+    if (num_candidates > 0) { // Only refresh if there are candidates
+      api_refreshwin(win, X_CANDIDATES, Y_CANDIDATES, X_CANDIDATES + WIDTH_CANDIDATES_AREA, refresh_height_cand);
+    } else { // If no candidates, still refresh the base candidate area to clear previous ones
+      api_refreshwin(win, X_CANDIDATES, Y_CANDIDATES, X_CANDIDATES + WIDTH_CANDIDATES_AREA, Y_CANDIDATES + 16); // Refresh at least one line height
+    }
 }
 
 void draw_composed_char(char *win_buf, int win_width, unsigned char* font_buf, int fh, unsigned char gb_high, unsigned char gb_low, int x, int y) {
@@ -265,8 +291,8 @@ void HariMain(void) {
                 composed_text_len++;
                 // Draw the selected character in composed area
                 draw_composed_char(win_buf, WIN_XSIZ, font_buf, fh, selected_char.gb_high_byte, selected_char.gb_low_byte, current_composed_x, Y_COMPOSED);
-                api_refreshwin(win, current_composed_x, Y_COMPOSED, current_composed_x + 16, Y_COMPOSED + 16); // Refresh the newly drawn char
-                current_composed_x += 16 + 1; // 16 char width + 1 gap (reduced for smaller window)
+                api_refreshwin(win, current_composed_x, Y_COMPOSED, current_composed_x + COMPOSED_CHAR_DISPLAY_WIDTH, Y_COMPOSED + 16); // Refresh the newly drawn char (use COMPOSED_CHAR_DISPLAY_WIDTH for actual char width)
+                current_composed_x += COMPOSED_CHAR_TOTAL_WIDTH; // Use macro for consistency
 
                 // Clear pinyin input and candidates
                 pinyin_len = 0;
@@ -274,14 +300,42 @@ void HariMain(void) {
                 num_candidates = 0;
                 needs_redraw = 1;
             }
-        } else if (key == 0x0e) { // Backspace key (common scan code)
+        } else if (key == 8) { // Backspace key (ASCII code)
             if (pinyin_len > 0) {
                 pinyin_len--;
                 pinyin_input[pinyin_len] = '\0';
-                find_matching_pinyin_entries(pinyin_input, pinyin_len, candidates, &num_candidates);
+                // 重新查找匹配的拼音条目
+                if (pinyin_len > 0) {
+                    find_matching_pinyin_entries(pinyin_input, pinyin_len, candidates, &num_candidates);
+                } else {
+                    // 如果拼音输入为空，清空候选项
+                    num_candidates = 0;
+                }
                 needs_redraw = 1;
+            } else if (composed_text_len > 0) { // Backspace for composed text
+                composed_text_len--;
+                current_composed_x -= COMPOSED_CHAR_TOTAL_WIDTH; // Move cursor back
+
+                // Clear the area of the deleted character in the window buffer
+                int x_clear_start = current_composed_x;
+                int y_clear_start = Y_COMPOSED;
+                int clear_width = COMPOSED_CHAR_TOTAL_WIDTH; // Clear character + gap
+                int clear_height = 16; // Character height
+                int r, c; // Declare r and c outside the loops for C89 compatibility
+
+                for (r = 0; r < clear_height; ++r) {                    for (c = 0; c < clear_width; ++c) {
+                        int win_x = x_clear_start + c;
+                        int win_y = y_clear_start + r;
+                        if (win_x >= 0 && win_x < WIN_XSIZ && win_y >= 0 && win_y < WIN_YSIZ) {
+                             win_buf[win_y * WIN_XSIZ + win_x] = BG_COLOR;
+                        }
+                    }
+                }
+                // Refresh the cleared area on screen
+                api_refreshwin(win, x_clear_start, y_clear_start, x_clear_start + clear_width, y_clear_start + clear_height);
+                // No explicit needs_redraw = 1 here, as this part is self-contained.
             }
-        } else if (key == 0x1c) { // Enter key
+        } else if (key == 10) { // Enter key (ASCII code)
             if (pinyin_len == 0 && num_candidates == 0) { // Exit if input is empty
                 break;
             }
