@@ -361,4 +361,29 @@ void cmd_sd(struct CONSOLE* cons);
 int is_directory_empty(struct FILEINFO* dir_info, int* fat);
 void trim_trailing_spaces(char *str);
 void cmd_sp(struct CONSOLE* cons);
-// 
+void shareadd(struct CONSOLE *cons);
+void produce(struct CONSOLE *cons);
+void consume(struct CONSOLE *cons);
+void entrance(int x);
+void exiting(int x);
+
+/* 实验6 */
+
+struct process
+{
+	char name[100];		  // 进程的可读标识
+	struct TASK *task;	  // 内核任务控制块
+	struct process *next; // 下一个等待的进程
+};
+struct S
+{
+	struct process *list_last;	// 等待队列的尾节点
+	struct process *list_first; // 等待队列的头节点
+	int value;					// 信号量计数器
+};
+extern struct S mutex;
+extern struct S wrt;
+extern int readcount;
+extern int share_bupt;
+// 初始化信号量
+void init_S();

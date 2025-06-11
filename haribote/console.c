@@ -315,6 +315,23 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 			cons_putstr0(cons, "Bad command.\n\n");
 		}
 	}
+	// 实验6
+	else if (strcmp(cmdline, "reader") == 0)
+	{
+		cmd_reader();
+	}
+	else if (strcmp(cmdline, "writer") == 0)
+	{
+		cmd_writer();
+	}
+	else if (strcmp(cmdline, "produce") == 0 && cons->sht != 0)
+	{
+		produce(cons);
+	}
+	else if (strcmp(cmdline, "consume") == 0 && cons->sht != 0)
+	{
+		consume(cons);
+	}
 	return;
 }
 
@@ -1431,4 +1448,271 @@ void cmd_sp(struct CONSOLE* cons) {
 
     sprintf(ptr_str, "Address: %p\n", (void*)entry_addr);
     cons_putstr0(cons, ptr_str);
+}
+
+// 实验6
+void wait(struct S *s, struct process *this_process, char *which_s)
+{
+	char buf[100];
+	int eflags = io_load_eflags(); // 保存中断状态
+	io_cli();					   // 关中断
+	s->value--;
+	if (s->value < 0)
+	{
+		// 打印调试信息
+		sprintf(buf, "%s is waiting %s!\n", this_process->name, which_s);
+		cons_putstr0(this_process->task->cons, buf);
+
+		// 将当前进程节点加入信号量s的等待队列
+		if (s->list_last == NULL)
+		{ // 队列为空时初始化分支
+			s->list_first = this_process;
+			s->list_last = this_process;
+			s->list_last->next = NULL;
+		}
+		else
+		{ // 队列不为空时直接加在队尾
+			s->list_last->next = this_process;
+			s->list_last = s->list_last->next;
+			s->list_last->next = NULL;
+		}
+		// 阻塞任务
+		task_sleep(this_process->task);
+	}
+	io_store_eflags(eflags); // 恢复中断状态
+}
+
+void signal(struct S *s, char *which_s)
+{
+	struct process *temp;
+	char buf[100];
+	int eflags = io_load_eflags(); // 保存中断状态
+	io_cli();					   // 关中断
+	s->value++;
+	if (s->value <= 0) // 说明原来至少有一个进程在等待
+	{
+		// 取出等待队列的队头
+		temp = s->list_first;
+
+		if (s->list_first == s->list_last)
+		{ // 只有一个进程在等待队列中
+			s->list_first = s->list_last = NULL;
+		}
+		else
+			s->list_first = s->list_first->next;
+		// 将这个进程标记为就绪
+		task_run(temp->task, -1, -1); // 保持原有优先级和level
+
+		sprintf(buf, "%s already get %s.\n", temp->name, which_s);
+		cons_putstr0(temp->task->cons, buf);
+	}
+	io_store_eflags(eflags); // 恢复中断状态
+}
+
+void init_S()
+{
+	mutex.value = 1; // 初始化信号量为1
+	mutex.list_first = NULL;
+	mutex.list_last = NULL;
+	wrt.value = 1; // 初始化信号量为1
+	wrt.list_first = NULL;
+	wrt.list_last = NULL;
+	readcount = 0;
+	share_bupt = 0;
+}
+#define END 1000
+void cmd_reader()
+{
+	char readbuf[100];
+	int if_end = 0;
+	struct process this_process; // 新建一个进程
+	this_process.next = NULL;
+	this_process.task = task_now();
+	while (1)
+	{
+		sprintf(this_process.name, "reader %d", readcount + 1);
+		wait(&mutex, &this_process, "mutex"); // 等待访问readcount
+		readcount++;
+		if (readcount == 1)
+		{
+			wait(&wrt, &this_process, "wrt"); // 第一个读者阻塞写者
+		}
+		signal(&mutex, "mutex");
+
+		// 访问共享变量share_bupt
+		sprintf(readbuf, "%s get share=%d|| %d\n", this_process.name, share_bupt, if_end + 1);
+		cons_putstr0(this_process.task->cons, readbuf);
+
+		wait(&mutex, &this_process, "mutex");
+		readcount--;
+		if (readcount == 0)
+		{
+			signal(&wrt, "wrt"); // 最后一个读者释放
+		}
+		signal(&mutex, "mutex");
+
+		if_end++;
+		if (if_end == END)
+			break;
+	}
+}
+void cmd_writer()
+{
+	char writebuf[100];
+	int if_end = 0;
+	struct process this_process; // 新建一个进程
+	this_process.next = NULL;
+	this_process.task = task_now();
+	sprintf(this_process.name, "writer");
+
+	while (1)
+	{
+		wait(&wrt, &this_process, "wrt"); // 写者每次都需要获取锁
+
+		// 访问共享变量share_bupt
+		share_bupt++;
+		sprintf(writebuf, "%s have written share=%d|| %d\n", this_process.name, share_bupt, if_end + 1);
+		cons_putstr0(this_process.task->cons, writebuf);
+
+		signal(&wrt, "wrt"); // 释放锁
+
+		if_end++;
+		if (if_end == END) // 写者进行END次写操作
+			break;
+	}
+}
+
+int share = 0; // 共享变量
+int sharenum = 0; // 任务计数器
+void shareadd(struct CONSOLE *cons)
+{
+	int i, j, x, temp, e;
+	char s[60];
+	struct TASK *now_task;
+
+	if (sharenum == 0)
+		share = 0;
+	sharenum += 1;
+	while (sharenum < 2)
+	{
+		now_task = task_now();
+		now_task->flags = 2;
+	}
+	for (;;)
+	{
+		temp = share;
+		e = io_load_eflags();
+		io_cli();
+		share += 1;
+		io_store_eflags(e);
+		x = share;
+		if ((x - temp) > 1)
+		{
+			sprintf(s, "share=%d,but share+1=%d\n", temp, x);
+			cons_putstr0(cons, s);
+			sharenum -= 1;
+			break;
+		}
+	}
+	return;
+}
+
+// Peterson算法
+#define BUFFER_SIZE 100
+int producer = 0, consumer = 1;	  // 定义生产者和消费者
+int flag[2] = {0, 0};			  // 表示是否想访问共享变量
+int turn;						  // 表示轮到谁
+int in = 0, out = 0, counter = 0; // 环形缓冲区指针和计数
+int buffer[BUFFER_SIZE];		  // 缓冲区
+int xnum = 0;
+
+void produce(struct CONSOLE *cons)
+{
+	char s[64];
+	int temp, outcome, e;
+	struct TASK *now_task;
+	now_task = task_now();
+	while (1)
+	{
+		while (counter == BUFFER_SIZE)
+		{
+			now_task = task_now(); // 忙等满缓冲区
+			now_task->flags = 2;
+		}
+		flag[producer] = 1;
+		turn = consumer;
+		while (flag[consumer] == 1 && turn == consumer) // spin次数统计
+			xnum++;
+		// 记录当前位置
+		temp = in;
+		outcome = rand();			 // 生成一条新数据
+		buffer[in] = outcome;		 // 将数据写入缓冲区
+		in = (in + 1) % BUFFER_SIZE; // 环形写入缓冲区
+		counter++;
+		flag[producer] = 0; // 退出区，清除自己的flag
+		// 打印调试信息
+		sprintf(s, "in buffer %d,produce %d\n", temp + 1, outcome);
+		cons_putstr0(cons, s);
+	}
+	return;
+}
+
+void consume(struct CONSOLE *cons)
+{
+	char s[64];
+	int temp, outcome, e;
+	struct TASK *now_task;
+	while (1)
+	{
+		while (counter == 0)
+		{
+			now_task = task_now();
+			now_task->flags = 2;
+		}
+		flag[consumer] = 1;
+		turn = producer;
+		while (flag[producer] == 1 && turn == producer)
+			xnum++;
+		// 从缓冲区读出数据
+		temp = out;
+		outcome = buffer[out];
+		out = (out + 1) % BUFFER_SIZE;
+		counter--;
+		flag[consumer] = 0;
+
+		sprintf(s, "in buffer %d,consume %d\n", temp + 1, outcome);
+		cons_putstr0(cons, s);
+	}
+	return;
+}
+
+// peterson算法的进入区和退出区，这2个可以当成互斥锁来使用，但仅能用于2个进程之间
+void entrance(int x)
+{
+	if (x == 1)
+	{
+		flag[consumer] = 1;
+		turn = producer;
+		while (flag[producer] == 1 && turn == producer)
+			xnum++;
+	}
+	if (x == 0)
+	{
+		flag[producer] = 1;
+		turn = consumer;
+		while (flag[consumer] == 1 && turn == consumer)
+			xnum++;
+	}
+}
+
+void exiting(int x)
+{
+	if (x == 1)
+	{
+		flag[consumer] = 0;
+	}
+	if (x == 0)
+	{
+		flag[producer] = 0;
+	}
 }
