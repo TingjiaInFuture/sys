@@ -137,6 +137,7 @@ struct TASK *task_alloc(void)
 			task->tss.gs = 0;
 			task->tss.iomap = 0x40000000;
 			task->tss.ss0 = 0;
+			task->tss.cr3 = KERNEL_PAGE_DIR;
 			return task;
 		}
 	}
