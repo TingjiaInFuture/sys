@@ -1,10 +1,10 @@
 /* asmhead.nas */
 struct BOOTINFO { /* 0x0ff0-0x0fff */
-	char cyls; /* �u�[�g�Z�N�^�͂ǂ��܂Ńf�B�X�N��ǂ񂾂̂� */
-	char leds; /* �u�[�g���̃L�[�{�[�h��LED�̏�� */
-	char vmode; /* �r�f�I���[�h  ���r�b�g�J���[�� */
+	char cyls; /* 启动区读磁盘读到此为止 */
+	char leds; /* 启动时键盘的LED的状态 */
+	char vmode; /* 显卡模式为多少位彩色 */
 	char reserve;
-	short scrnx, scrny; /* ��ʉ𑜓x */
+	short scrnx, scrny; /* 画面分辨率 */
 	char *vram;
 };
 #define ADR_BOOTINFO	0x00000ff0
@@ -132,8 +132,23 @@ void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 /* memory.c */
-#define MEMMAN_FREES		4090	/* ����Ŗ�32KB */
+#define MEMMAN_FREES		4090	/* 32KB */
 #define MEMMAN_ADDR			0x003c0000
+// //
+// memory.c 新增内容
+#define DISK_SIZE 1474560  // 1.44MB，模拟软盘大小
+#define FAT12_BOOT_SECTOR_SIZE 512
+#define FAT12_FAT_SIZE 2880   // FAT12每个FAT表大小
+#define FAT12_ROOT_DIR_SIZE 512 * 4  // 根目录大小
+// 之前为了图省事只初始化了一个FAT表，但是计算的时候用的两个，导致数据区起始位置计算错误
+// data_start = FAT12_DATA_START / 512 会比实际大 FAT12_FAT_SIZE / 512 扇区（即一个 FAT 表的扇区数）
+// 因此我们先尝试单 FAT 表的简化版本 - 但是在内存组织上还是按照标准的 FAT12 格式进行
+// #define FAT12_DATA_START (FAT12_BOOT_SECTOR_SIZE + FAT12_FAT_SIZE + FAT12_ROOT_DIR_SIZE)
+#define FAT12_DATA_START 16896
+#define MAX_CLUSTERS ((DISK_SIZE - FAT12_DATA_START) / 512)
+//  //
+
+
 struct FREEINFO {	/* ������� */
 	unsigned int addr, size;
 };
@@ -201,8 +216,8 @@ int timer_cancel(struct TIMER *timer);
 void timer_cancelall(struct FIFO32 *fifo);
 
 /* mtask.c */
-#define MAX_TASKS		1000	/* �ő�^�X�N�� */
-#define TASK_GDT0		3		/* TSS��GDT�̉��Ԃ��犄�蓖�Ă�̂� */
+#define MAX_TASKS 1000	/*最大任务数量*/
+#define TASK_GDT0 3			/*定义从GDT的几号开始分配给TSS */
 #define MAX_TASKS_LV	100
 #define MAX_TASKLEVELS	10
 struct TSS32 {
@@ -212,8 +227,8 @@ struct TSS32 {
 	int ldtr, iomap;
 };
 struct TASK {
-	int sel, flags; /* sel��GDT�̔ԍ��̂��� */
-	int level, priority;
+	int sel, flags;		/* sel用来存放GDT的编号*/
+	int level, priority; /* 优先级 */
 	struct FIFO32 fifo;
 	struct TSS32 tss;
 	struct SEGMENT_DESCRIPTOR ldt[2];
@@ -223,15 +238,18 @@ struct TASK {
 	int *fat;
 	char *cmdline;
 	unsigned char langmode, langbyte1;
+	// struct FILEINFO *current_dir;       ///////// 新增字段，记录当前所在目录
+	// int dir_level;                // 当前目录层级
+    // struct FILEINFO* dir_stack[16]; // 目录栈（最大支持16层嵌套）
 };
 struct TASKLEVEL {
-	int running; /* ���삵�Ă���^�X�N�̐� */
-	int now; /* ���ݓ��삵�Ă���^�X�N���ǂꂾ��������悤�ɂ��邽�߂̕ϐ� */
+	int running; /*正在运行的任务数量*/
+	int now; /*这个变量用来记录当前正在运行的是哪个任务*/
 	struct TASK *tasks[MAX_TASKS_LV];
 };
 struct TASKCTL {
-	int now_lv; /* ���ݓ��쒆�̃��x�� */
-	char lv_change; /* ����^�X�N�X�C�b�`�̂Ƃ��ɁA���x�����ς����ق����������ǂ��� */
+	int now_lv; /*现在活动中的LEVEL */
+	char lv_change; /*在下次任务切换时是否需要改变LEVEL */
 	struct TASKLEVEL level[MAX_TASKLEVELS];
 	struct TASK tasks0[MAX_TASKS];
 };
@@ -283,15 +301,16 @@ void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col)
 
 /* file.c */
 struct FILEINFO {
-	unsigned char name[8], ext[3], type;
-	char reserve[10];
-	unsigned short time, date, clustno;
-	unsigned int size;
+	unsigned char name[8], ext[3], type; 	// 对应DIR_Name[11]（8+3）和DIR_Attr
+	char reserve[10];						// 对应保留字段
+	unsigned short time, date, clustno;		// 对应DIR_WrtTime、DIR_WrtDate、DIR_FstClus
+	unsigned int size;						// 对应DIR_FileSize
 };
 void file_readfat(int *fat, unsigned char *img);
 void file_loadfile(int clustno, int size, char *buf, int *fat, char *img);
 struct FILEINFO *file_search(char *name, struct FILEINFO *finfo, int max);
 char *file_loadfile2(int clustno, int *psize, int *fat);
+struct FILEINFO* create_directory_in_memory(struct FILEINFO* parent_dir, const char* name);
 
 /* tek.c */
 int tek_getsize(unsigned char *p);
@@ -300,3 +319,46 @@ int tek_decomp(unsigned char *p, char *q, int size);
 /* bootpack.c */
 struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
+
+// 内存磁盘结构
+struct MEM_DISK {
+    unsigned char* data;
+    int* fat;
+    struct FILEINFO* root_dir;
+    int initialized;
+	struct FILEINFO *current_dir;       // 当前所在目录
+    int dir_level;                      // 当前目录层级
+    struct FILEINFO* dir_stack[16];     // 目录栈（最大支持16层嵌套）
+};
+
+extern struct MEM_DISK mem_disk;
+
+void init_memory_disk(struct MEMMAN* memman);
+void init_boot_sector(unsigned char* boot_sector);
+void init_fat_table(int* fat);
+void init_root_dir(struct FILEINFO* root_dir);
+struct MEM_DISK* get_memory_disk();
+void file_readfat_from_memory(int* fat);
+void file_loadfile_from_memory(int clustno, int size, char* buf, int* fat);
+int file_writefile_to_memory(int clustno, int size, char* buf, int* fat);
+int alloc_cluster(int* fat);
+struct FILEINFO* create_file_in_memory(struct FILEINFO* parent_dir, const char* name, int size);
+struct FILEINFO* find_free_file_info(struct FILEINFO* root_dir, int* fat);
+void parse_short_name(const char* long_name, char* short_name);
+struct FILEINFO* find_file_info(struct FILEINFO* root_dir, const char* name);
+void cmd_mkdir(struct CONSOLE* cons, char* dirname);
+void cmd_touch(struct CONSOLE* cons, char* filename);
+void cmd_cp(struct CONSOLE* cons, char* filename);
+void cmd_paste(struct CONSOLE* cons);
+void cmd_rm(struct CONSOLE* cons, char* filename);
+void cmd_df(struct CONSOLE* cons);
+void cmd_cat(struct CONSOLE* cons, char* filename, int* fat);
+void cmd_write(struct CONSOLE* cons, char* filename, char* content, int* fat);
+void cmd_rmdir(struct CONSOLE* cons, char* dirname);
+void cmd_lsm(struct CONSOLE *cons);
+void cmd_cd(struct CONSOLE* cons, char* dirname);
+void cmd_sd(struct CONSOLE* cons);
+int is_directory_empty(struct FILEINFO* dir_info, int* fat);
+void trim_trailing_spaces(char *str);
+void cmd_sp(struct CONSOLE* cons);
+// 

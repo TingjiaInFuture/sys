@@ -70,6 +70,9 @@ void HariMain(void)
 	memman_init(memman);
 	memman_free(memman, 0x00001000, 0x0009e000); /* 0x00001000 - 0x0009efff */
 	memman_free(memman, 0x00400000, memtotal - 0x00400000);
+	
+	// 初始化内存磁盘
+	init_memory_disk(memman);
 
 	init_palette();
 	shtctl = shtctl_init(memman, binfo->vram, binfo->scrnx, binfo->scrny);
@@ -188,17 +191,17 @@ void HariMain(void)
                         key_pressed[press_code] = 1; // 标记为按下
 
                         // --- 字符转换逻辑 ---
-                        if (key_shift == 0) {
+					if (key_shift == 0) {
                             translated_char = keytable0[press_code];
-                        } else {
+				} else {
                             translated_char = keytable1[press_code];
-                        }
+				}
                         if ('A' <= translated_char && translated_char <= 'Z') {
-                            if (((key_leds & 4) == 0 && key_shift == 0) ||
-                                ((key_leds & 4) != 0 && key_shift != 0)) {
+					if (((key_leds & 4) == 0 && key_shift == 0) ||
+							((key_leds & 4) != 0 && key_shift != 0)) {
                                 translated_char += 0x20; /* 大写转小写 */
-                            }
-                        }
+					}
+				}
                         // --- 字符转换逻辑结束 ---
 
                         // --- 发送字符到活动窗口 ---
@@ -206,7 +209,7 @@ void HariMain(void)
                             // 特殊处理 Ctrl+C (不发送 'C')
                             if (!(key_ctrl != 0 && press_code == 0x2e)) {
                                 fifo32_put(&key_win->task->fifo, translated_char + 256);
-                            }
+				}
                         }
 
                         // --- 处理特殊按键的按下状态 ---
@@ -215,20 +218,20 @@ void HariMain(void)
                         if (press_code == 0x1d) { key_ctrl = 1; }    // Left Ctrl ON (Right Ctrl has different code if needed)
 
                         if (press_code == 0x3a) { /* CapsLock */
-                            key_leds ^= 4;
-                            fifo32_put(&keycmd, KEYCMD_LED);
-                            fifo32_put(&keycmd, key_leds);
-                        }
+					key_leds ^= 4;
+					fifo32_put(&keycmd, KEYCMD_LED);
+					fifo32_put(&keycmd, key_leds);
+				}
                         if (press_code == 0x45) { /* NumLock */
-                            key_leds ^= 2;
-                            fifo32_put(&keycmd, KEYCMD_LED);
-                            fifo32_put(&keycmd, key_leds);
-                        }
+					key_leds ^= 2;
+					fifo32_put(&keycmd, KEYCMD_LED);
+					fifo32_put(&keycmd, key_leds);
+				}
                         if (press_code == 0x46) { /* ScrollLock */
-                            key_leds ^= 1;
-                            fifo32_put(&keycmd, KEYCMD_LED);
-                            fifo32_put(&keycmd, key_leds);
-                        }
+					key_leds ^= 1;
+					fifo32_put(&keycmd, KEYCMD_LED);
+					fifo32_put(&keycmd, key_leds);
+				}
 
                         // --- 处理功能键和组合键 ---
                         if (press_code == 0x0f && key_win != 0) { /* Tab */
@@ -239,29 +242,29 @@ void HariMain(void)
                             keywin_on(key_win);
                         }
                         if (press_code == 0x3b && key_shift != 0 && key_win != 0) {	/* Shift+F1 */
-                            task = key_win->task;
-                            if (task != 0 && task->tss.ss0 != 0) {
-                                cons_putstr0(task->cons, "\nBreak(key) :\n");
+					task = key_win->task;
+					if (task != 0 && task->tss.ss0 != 0) {
+						cons_putstr0(task->cons, "\nBreak(key) :\n");
                                 io_cli();	/* 強制終了処理中にタスクが変わると困るから */
-                                task->tss.eax = (int) &(task->tss.esp0);
-                                task->tss.eip = (int) asm_end_app;
-                                io_sti();
+						task->tss.eax = (int) &(task->tss.esp0);
+						task->tss.eip = (int) asm_end_app;
+						io_sti();
                                 task_run(task, -1, 0);	/* 終了処理を確実にやらせるために、寝ていたら起こす */
-                            }
-                        }
+					}
+				}
                         if (press_code == 0x3c && key_shift != 0) {	/* Shift+F2 */
                             /* 新しく作ったコンソールをアクティブにする（前のほうが見やすいか？） */
-                            if (key_win != 0) {
-                                keywin_off(key_win);
-                            }
-                            key_win = open_console(shtctl, memtotal);
-                            sheet_slide(key_win, 32, 4);
-                            sheet_updown(key_win, shtctl->top);
-                            keywin_on(key_win);
-                        }
+					if (key_win != 0) {
+						keywin_off(key_win);
+					}
+					key_win = open_console(shtctl, memtotal);
+					sheet_slide(key_win, 32, 4);
+					sheet_updown(key_win, shtctl->top);
+					keywin_on(key_win);
+				}
                         if (press_code == 0x57) {	/* F11 */
-                            sheet_updown(shtctl->sheets[1], shtctl->top - 1);
-                        }
+					sheet_updown(shtctl->sheets[1], shtctl->top - 1);
+				}
                         if (key_ctrl != 0 && press_code == 0x2e) { // Ctrl + C is pressed
                             // 打开新控制台
                             if (key_win != 0) {
@@ -290,12 +293,12 @@ void HariMain(void)
 
                 // --- 处理键盘控制器响应码 (与按键状态无关) ---
                 if (sc == 0xfa) { /* キーボードがデータを無事に受け取った */
-                    keycmd_wait = -1;
-                }
+					keycmd_wait = -1;
+				}
                 if (sc == 0xfe) { /* キーボードがデータを無事に受け取れなかった */
-                    wait_KBC_sendready();
-                    io_out8(PORT_KEYDAT, keycmd_wait);
-                }
+					wait_KBC_sendready();
+					io_out8(PORT_KEYDAT, keycmd_wait);
+				}
 			} else if (512 <= i && i <= 767) { /* �}�E�X�f�[�^ */
 				if (mouse_decode(&mdec, i - 512) != 0) {
 					/* �}�E�X�J�[�\���̈ړ� */
