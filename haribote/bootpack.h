@@ -24,6 +24,9 @@ void load_idtr(int limit, int addr);
 int load_cr0(void);
 void store_cr0(int cr0);
 void load_tr(int tr);
+void store_cr3(int cr3);
+unsigned int read_cr3(void);
+void flush_tlb(void);
 void asm_inthandler0c(void);
 void asm_inthandler0d(void);
 void asm_inthandler20(void);
@@ -132,6 +135,26 @@ void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 /* memory.c */
+<<<<<<< HEAD
+// paging
+#define CR0_PG				0x80000000	// paging enable
+#define KERNEL_PAGE_DIR  	0x00400000  // PDT phy addr
+#define KERNEL_PAGE_TBL   	0x00401000  // PT phy addr
+#define KERNEL_VIRT_ADDR  	0xc0000000
+
+// paging flags
+#define PG_P              0x00000001  // Present
+#define PG_RW             0x00000002  // Read/Write
+#define PG_US             0x00000004  // User/Supervisor
+#define PG_A              0x00000020  // Accessed
+#define PG_D              0x00000040  // Dirty
+#define PG_PS             0x00000080  // Page Size (4MB)
+
+#define KERNEL_V2P(x) ((x) - 0xc0000000)
+#define KERNEL_P2V(x) ((x) + 0xc0000000)
+
+=======
+>>>>>>> cd96f5c5205cd987613df74b40457a5ca0d64373
 #define MEMMAN_FREES		4090	/* 32KB */
 #define MEMMAN_ADDR			0x003c0000
 // //
@@ -163,6 +186,7 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size);
 int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size);
 unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size);
 int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
+void init_paging();
 
 /* sheet.c */
 #define MAX_SHEETS		256

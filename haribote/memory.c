@@ -93,6 +93,61 @@ void init_root_dir(struct FILEINFO* root_dir) {
 
 }
 
+<<<<<<< HEAD
+void init_paging(void)
+{
+    unsigned int *pde = (unsigned int *)KERNEL_PAGE_DIR;
+    unsigned int *pte = (unsigned int *)KERNEL_PAGE_TBL;
+    unsigned int addr, i, j;
+
+	// clear
+    for (i = 0; i < 1024; i++) {
+        pde[i] = 0;
+    }
+	for (i = 0; i < 1024 * 1024; i++) {
+        pte[i] = 0;
+    }
+
+    // identity mapping
+    for (i = 0; i < 1024; i++) {
+        pde[i] = (KERNEL_PAGE_TBL + i * 4096) | PG_P | PG_RW | PG_US;
+        for (j = 0; j < 1024; j++) {
+            pte[i * 1024 + j] = ((i * 1024 + j) * 4096) | PG_P | PG_RW | PG_US;
+        }
+    }
+
+	// high memory mapping
+	unsigned int high_pte_offset = 1024 * 1024;
+
+	for (i = 0; i < 16; i++) {
+        pde[i + 768] = (KERNEL_PAGE_TBL + (1024 + i) * 4096) | PG_P | PG_RW | PG_US;
+        for (j = 0; j < 1024; j++) {
+            pte[high_pte_offset + i * 1024 + j] = ((i * 1024 + j) * 4096) | PG_P | PG_RW | PG_US;
+        }
+    }
+
+    unsigned int pdt_page = KERNEL_PAGE_DIR / 4096;
+    unsigned int pde_idx = pdt_page / 1024;
+    unsigned int pte_idx = pdt_page % 1024;
+    pte[pde_idx * 1024 + pte_idx] = KERNEL_PAGE_DIR | PG_P | PG_RW | PG_US;
+
+	unsigned int pt_start_page = KERNEL_PAGE_TBL / 4096;
+    unsigned int pt_end_page = (KERNEL_PAGE_TBL + 1024 * 4096) / 4096;
+    for (i = pt_start_page; i < pt_end_page; i++) {
+        pde_idx = i / 1024;
+        pte_idx = i % 1024;
+        pte[pde_idx * 1024 + pte_idx] = (i * 4096) | PG_P | PG_RW | PG_US;
+    }
+	
+    store_cr3(KERNEL_PAGE_DIR);
+    flush_tlb();
+    unsigned int cr0 = load_cr0();
+    cr0 |= CR0_PG;
+    store_cr0(cr0);
+}
+
+=======
+>>>>>>> cd96f5c5205cd987613df74b40457a5ca0d64373
 ////////////////
 
 unsigned int memtest(unsigned int start, unsigned int end)

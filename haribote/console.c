@@ -253,6 +253,8 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 {
 	if (strcmp(cmdline, "mem") == 0 && cons->sht != 0) {
 		cmd_mem(cons, memtotal);
+	} else if (strcmp(cmdline, "pgtest") == 0) {
+		verify_paging(cons->sht);
 	} else if (strcmp(cmdline, "cls") == 0 && cons->sht != 0) {
 		cmd_cls(cons);
 	} else if ((strcmp(cmdline, "dir") == 0 || strcmp(cmdline, "ls") == 0) && cons->sht != 0) {

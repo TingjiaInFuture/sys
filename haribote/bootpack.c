@@ -467,3 +467,99 @@ void close_console(struct SHEET *sht)
 	close_constask(task);
 	return;
 }
+
+void verify_paging(struct SHEET *sht)
+{
+    struct TASK *task = sht->task;
+    struct CONSOLE *cons = task->cons;
+    unsigned int cr0_val, cr3_val;
+    char s[60];
+    unsigned int high_idx, pt_addr, pt_index, mapped_addr;
+    unsigned int *pde = (unsigned int *)KERNEL_PAGE_DIR;
+    unsigned int *pt;
+	int i;
+
+    cmd_cls(cons);
+    cons_putstr0(cons, "===== PAGING TEST RESULTS =====\n");
+
+	// 1. check config
+    cr0_val = load_cr0();
+	cr3_val = read_cr3();
+    sprintf(s, "Paging: %s, PD: 0x%08X", (cr0_val & 0x80000000) ? "ON" : "OFF", cr3_val);
+    cons_putstr0(cons, s);
+    cons_newline(cons);
+
+	// 2. check Page tables
+	high_idx = KERNEL_VIRT_ADDR >> 22;
+    
+    if ((pde[high_idx] & 0x01) == 0) {
+        cons_putstr0(cons, "Error: High address page table not present!\n");
+        return;
+    }
+
+    pt_addr = pde[high_idx] & 0xFFFFF000;
+    pt = (unsigned int *)pt_addr;
+    pt_index = (0x00280000 >> 12) & 0x3FF;
+    mapped_addr = pt[pt_index] & 0xFFFFF000;
+    
+    sprintf(s, "PDE[%d]=0x%08X -> PT=0x%08X -> Maps to 0x%08X", 
+            high_idx, pde[high_idx], pt_addr, mapped_addr);
+    cons_putstr0(cons, s);
+    cons_newline(cons);
+
+	// 3. test memory access
+    unsigned char *test_addr_phys = (unsigned char*)0x00280000;
+    unsigned char *test_addr_virt = (unsigned char*)0xC0280000;
+    
+	// save
+    unsigned char backup[8];
+    for (i = 0; i < 8; i++) {
+        backup[i] = test_addr_phys[i];
+    }
+
+    // write phy -> read virt
+    cons_putstr0(cons, "Test 1: \n");
+    for (i = 0; i < 4; i++) {
+        test_addr_phys[i] = 0xA0 + i;
+    }
+    int test1_pass = 1;
+    for (i = 0; i < 4; i++) {
+        if (test_addr_virt[i] != (0xA0 + i)) {
+            test1_pass = 0;
+            break;
+        }
+    }
+    sprintf(s, "Result: %s", test1_pass ? "PASSED" : "FAILED");
+    cons_putstr0(cons, s);
+    cons_newline(cons);
+	
+	// write virt -> read phy
+    cons_putstr0(cons, "Test 2: \n");
+    for (i = 0; i < 4; i++) {
+        test_addr_virt[i] = 0xB0 + i;
+    }
+    int test2_pass = 1;
+    for (i = 0; i < 4; i++) {
+        if (test_addr_phys[i] != (0xB0 + i)) {
+            test2_pass = 0;
+            break;
+        }
+    }
+    sprintf(s, "Result: %s", test2_pass ? "PASSED" : "FAILED");
+    cons_putstr0(cons, s);
+    cons_newline(cons);
+	
+	// restore
+    for (i = 0; i < 8; i++) {
+        test_addr_phys[i] = backup[i];
+    }
+    
+    cons_newline(cons);
+    if ((cr0_val & 0x80000000) && (cr3_val == KERNEL_PAGE_DIR) && 
+        (mapped_addr == 0x00280000) && test1_pass && test2_pass) {
+        cons_putstr0(cons, "HIGH MEMORY MAPPING is working correctly!\n");
+    }
+	else{
+        cons_putstr0(cons, "OH NO...something is wrong with paging");
+    }
+}
