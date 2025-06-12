@@ -93,7 +93,7 @@ void init_root_dir(struct FILEINFO* root_dir) {
 
 }
 
-<<<<<<< HEAD
+
 void init_paging(void)
 {
     unsigned int *pde = (unsigned int *)KERNEL_PAGE_DIR;
@@ -146,9 +146,6 @@ void init_paging(void)
     store_cr0(cr0);
 }
 
-=======
->>>>>>> cd96f5c5205cd987613df74b40457a5ca0d64373
-////////////////
 
 unsigned int memtest(unsigned int start, unsigned int end)
 {

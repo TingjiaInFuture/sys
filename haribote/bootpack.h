@@ -135,7 +135,7 @@ void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 /* memory.c */
-<<<<<<< HEAD
+
 // paging
 #define CR0_PG				0x80000000	// paging enable
 #define KERNEL_PAGE_DIR  	0x00400000  // PDT phy addr
@@ -153,8 +153,6 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 #define KERNEL_V2P(x) ((x) - 0xc0000000)
 #define KERNEL_P2V(x) ((x) + 0xc0000000)
 
-=======
->>>>>>> cd96f5c5205cd987613df74b40457a5ca0d64373
 #define MEMMAN_FREES		4090	/* 32KB */
 #define MEMMAN_ADDR			0x003c0000
 // //
