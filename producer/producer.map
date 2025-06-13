@@ -1,0 +1,57 @@
+text size :   1646(0x0066E)
+data size :    160(0x000A0)
+bss  size :      0(0x00000)
+
+0x00000024 : (.text)
+0x00000024 : _HariMain
+0x00000124 : _api_putstr0
+0x00000124 : (.text)
+0x00000132 : _api_end
+0x00000132 : (.text)
+0x00000139 : _api_entrance
+0x00000139 : (.text)
+0x00000145 : _api_exit
+0x00000145 : (.text)
+0x00000151 : _api_var_create
+0x00000151 : (.text)
+0x00000163 : _api_var_read
+0x00000163 : (.text)
+0x00000175 : _api_var_wrt
+0x00000175 : (.text)
+0x0000018B : (.text)
+0x0000018B : _HariStartup
+0x00000194 : _rand
+0x00000194 : (.text)
+0x000001B5 : _sprintf
+0x000001B5 : (.text)
+0x000001C9 : (.text)
+0x00000205 : _strtoul0
+0x000002D8 : (.text)
+0x00000300 : _vsprintf
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00000000 : (.data)
+0x00019000 : (.data)
+0x0001907C : (.data)
+0x0001907C : _rand_seed
+0x00019080 : (.data)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
+0x00000000 : (.bss)
